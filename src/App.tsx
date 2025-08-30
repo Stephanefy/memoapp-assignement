@@ -1,25 +1,18 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Drawer from './components/common/drawer';
+import { MemoContextProvider } from './context/memo-context';
+import { AuthContextProvider } from './context/auth-context';
+import { DrawerContextProvider } from './context/drawer-context';
+
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthContextProvider>
+      <DrawerContextProvider>
+        <MemoContextProvider>
+          <Drawer />
+        </MemoContextProvider>
+      </DrawerContextProvider>
+    </AuthContextProvider>
   );
 }
 
