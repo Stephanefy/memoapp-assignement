@@ -2,8 +2,7 @@ import { useMemoContext } from "../../context/memo-context"
 import CategoryItem from "../features/category/category-item";
 import { addNewMemo } from "../../services/api/memo";
 import { useAuthContext } from "../../context/auth-context";
-import { updateCategoryMemos } from "../../utils/update-category-memos";
-
+import { Memo } from "../../context/memo-context";
 export default function DrawerSide() {
 
     const { categories, setCategories, currentOpenedCategory } = useMemoContext();
@@ -22,13 +21,24 @@ export default function DrawerSide() {
             title: "New Memo",
             content: ""
         }
-        await addNewMemo(accessToken!, payload)
+        const createdMemo = await addNewMemo(accessToken!, payload)
+
 
         const currentCategory = categories?.find((category) => category.id === currentOpenedCategory)
 
-        const newCategories = await updateCategoryMemos(accessToken!, categories!, currentCategory!)
+        const newMemos = [...currentCategory!.memos! as Memo[], createdMemo]
 
-        setCategories(newCategories)
+        const updatedCategories = categories?.map((category) => {
+            if (category.id === currentCategory!.id) {
+                return {
+                    ...category, memos: newMemos
+                }
+            }
+            return category
+
+        })
+
+        setCategories(updatedCategories!)
     }
 
 

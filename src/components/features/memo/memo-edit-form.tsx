@@ -2,7 +2,6 @@ import { useState, useEffect, ChangeEvent } from "react";
 import { useMemoContext } from "../../../context/memo-context";
 import { useAuthContext } from "../../../context/auth-context";
 import { editMemoDetails, deleteMemo } from "../../../services/api/memo";
-import { updateCategoryMemos } from "../../../utils/update-category-memos";
 
 
 
@@ -47,7 +46,7 @@ export default function MemoEditForm() {
     }
 
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const onUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.currentTarget;
         const formData = new FormData(form);
@@ -68,13 +67,27 @@ export default function MemoEditForm() {
         try {
             const response = await editMemoDetails(accessToken!, currentSelectedMemo.id, payload);
 
+
+
             if (response && 'ok' in response && response.ok) {
+
+                const udpatedMemo = await response.json();
 
                 const currentCategory = categories?.find((category) => category.id === currentOpenedCategory)
 
-                const newCategories = await updateCategoryMemos(accessToken!, categories!, currentCategory!)
+                const newMemos = currentCategory!.memos!.map((memo) => {
+                    return memo.id === udpatedMemo.id
+                        ? udpatedMemo
+                        : memo
+                })
 
-                setCategories(newCategories)
+                const updatedCategories = categories?.map((category) => {
+                    return category.id === currentOpenedCategory
+                        ? { ...category, memos: newMemos }
+                        : category
+                })
+
+                setCategories(updatedCategories!)
             } else {
                 throw new Error("There was an issue with the editing of the memo")
             }
@@ -119,7 +132,7 @@ export default function MemoEditForm() {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={onUpdate}>
             <label className="form-control w-full">
                 <div className="label">
                     <span className="label-text">Title</span>
