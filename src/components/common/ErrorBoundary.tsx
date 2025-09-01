@@ -1,5 +1,4 @@
-// src/components/common/ErrorBoundary.tsx
-import React, { Component, ReactNode, ErrorInfo } from 'react';
+import { Component, ReactNode, ErrorInfo } from 'react';
 
 interface ErrorBoundaryProps {
   children: ReactNode;

@@ -1,4 +1,4 @@
-const BASE_URL = 'https://challenge-server.tracks.run/memoapp';
+import { BASE_URL } from '../../constants/api';
 
 export async function login(accessToken: string) {
   const response = await fetch(`${BASE_URL}/category`, {

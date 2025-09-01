@@ -10,6 +10,13 @@ export class ApiError extends Error {
     }
 }
 
+
+/** Request helper that normalizes fetch I/O: 
+ * JSON-serializes plain-object bodies, 
+ * sets headers, parses JSON (or text), 
+ * returns undefined on 204, 
+ * throws ApiError on non-2xx. 
+ **/
 export async function request<T>(
     input: RequestInfo | URL,
     init?: RequestInit
