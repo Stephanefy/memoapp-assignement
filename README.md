@@ -1,4 +1,4 @@
-### MemoApp — Token‑gated memo manager
+# MemoApp — Token‑gated memo manager
 
 A lightweight memo manager built with React + TypeScript, TailwindCSS, and DaisyUI. Users authenticate with an access token and can browse categories, fetch memos, create a new memo, edit memo details, and delete memos — all via a simple drawer UI.
 
