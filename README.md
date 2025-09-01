@@ -1,46 +1,112 @@
-# Getting Started with Create React App
+### MemoApp — Token‑gated memo manager
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A lightweight memo manager built with React + TypeScript, TailwindCSS, and DaisyUI. Users authenticate with an access token and can browse categories, fetch memos, create a new memo, edit memo details, and delete memos — all via a simple drawer UI.
 
-## Available Scripts
+### Tech stack
 
-In the project directory, you can run:
+- React 19 + TypeScript (CRA)
+- TailwindCSS + DaisyUI for styling
+- Context API for state (auth, drawer, memo)
+- Fetch-based API layer with a typed `request` helper
+- Testing Library (preconfigured)
 
-### `npm start`
+### Quick start
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **Install**:
+  - `cd memoapp && npm install`
+- **Run dev server**:
+  - `npm start` → `http://localhost:3000`
+- **Build**:
+  - `npm run build`
+- **Tests**:
+  - `npm test`
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### Authentication
 
-### `npm test`
+- Enter your access token in the navbar input and click LOGIN.
+- The token must be a valid UUID v4. Basic client-side validation is enforced in `auth-context`.
+- On success, categories are loaded and listed in the drawer.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Features
 
-### `npm run build`
+- **Login with token**: Loads user categories from the API.
+- **Browse categories**: Expand a category to fetch its memos.
+- **Select memo**: Loads full memo details into an editor pane.
+- **Create memo**: Click NEW in the drawer to add a blank memo to the current category.
+- **Edit memo**: Update title/content and SAVE.
+- **Delete memo**: Remove the current memo with DELETE.
+- **Error UX**: API and validation errors are surfaced with user-friendly messages.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### API
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Endpoints used:
+  - `GET /category` (requires header `X-ACCESS-TOKEN`) — loads categories on login.
+  - `GET /memo?category_id={id}` — fetch memos for a category.
+  - `GET /memo/{id}` — fetch memo details.
+  - `POST /memo` — create memo `{ category_id, title, content }`.
+  - `PUT /memo/{id}` — update memo `{ category_id, title, content }`.
+  - `DELETE /memo/{id}` — delete memo.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Headers typically include:
+- `Content-Type: application/json`
+- `X-ACCESS-TOKEN: <uuid-v4>`
 
-### `npm run eject`
+All requests go through:
+- `src/utils/request-helper.ts` — adds sensible defaults, parses JSON, and throws typed `ApiError` on non‑2xx.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Project structure
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- `src/App.tsx`: Composes providers and renders the drawer layout.
+- `src/context/`
+  - `auth-context.tsx`: Token, auth state, simple UUID v4 validation.
+  - `memo-context.tsx`: Categories, current category, selected memo, memo list.
+  - `drawer-context.tsx`: Drawer open/close state.
+- `src/components/`
+  - `common/`
+    - `drawer.tsx`: Shell layout with navbar and main content.
+    - `drawer-side.tsx`: Category list, NEW memo action.
+    - `ErrorBoundary.tsx`: Catches render errors.
+  - `features/login/`
+    - `login-form.tsx`, `login-input.tsx`: Token form and login flow.
+  - `features/memo/`
+    - `memo-details.tsx`, `memo-edit-form.tsx`, `memo-item.tsx`: Memo view/edit and list item.
+  - `features/category/`
+    - `category-item.tsx`: Expand/collapse and memo fetching per category.
+- `src/services/api/`
+  - `login-service.ts`: `GET /category`
+  - `memo-service.ts`: CRUD for memos
+- `src/utils/`
+  - `request-helper.ts`: Robust fetch wrapper.
+  - `error.ts`: Maps errors to user-facing messages; timed dismissal helper.
+  - `update-category-memos.ts`: Fetch and inject memos into a category.
+  - `update-memo-state.ts`: Client-side state updates for ADD/UPDATE/DELETE.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Styling
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- Tailwind and DaisyUI configured via `tailwind.config.js` and `postcss.config.js`.
+- Components use utility classes; themes available via DaisyUI.
 
-## Learn More
+### Local development tips
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- Ensure a valid UUID v4 token for login; invalid tokens disable the LOGIN button or show inline errors.
+- Categories fetch on successful login; memos fetch lazily per expanded category.
+- After memo operations (add/edit/delete), state is updated immutably via `update-memo-state`.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Scripts (package.json)
+
+- `start`: CRA dev server
+- `build`: Production build
+- `test`: Jest + Testing Library
+- `eject`: CRA eject (one-way)
+
+### Requirements
+
+- Node 16+ recommended
+- Internet access to reach the challenge API
+
+### Troubleshooting
+
+- Seeing “Invalid access token”? Confirm your UUID v4 format.
+- 401/403 responses: token missing or invalid.
+- 404 editing/deleting: memo may not exist; refresh categories.
+- 500 errors: transient server issues; try again later.
