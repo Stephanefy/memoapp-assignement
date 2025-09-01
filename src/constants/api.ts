@@ -1,1 +1,1 @@
-export const BASE_URL = "https://challenge-server.tracks.run/memoapp"
+export const BASE_URL = 'https://challenge-server.tracks.run/memoapp';

@@ -3,7 +3,6 @@ import { MemoContextProvider } from './context/memo-context';
 import { AuthContextProvider } from './context/auth-context';
 import { DrawerContextProvider } from './context/drawer-context';
 
-
 function App() {
   return (
     <AuthContextProvider>

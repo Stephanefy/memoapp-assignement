@@ -1,59 +1,70 @@
-import { useMemoContext } from "../../context/memo-context"
-import CategoryItem from "../features/category/category-item";
-import { addNewMemo } from "../../services/api/memo";
-import { useAuthContext } from "../../context/auth-context";
-import { Memo } from "../../context/memo-context";
+import { useState } from 'react';
+import { MemoDetails, useMemoContext } from '../../context/memo-context';
+import CategoryItem from '../features/category/category-item';
+import { addNewMemo } from '../../services/api/memo-service';
+import { useAuthContext } from '../../context/auth-context';
+import { updateMemoState } from '../../utils/update-memo-state';
+
 export default function DrawerSide() {
-
-    const { categories, setCategories, currentOpenedCategory } = useMemoContext();
+    const {
+        categories,
+        setCategories,
+        currentOpenedCategory,
+        setCurrentSelectedMemo,
+    } = useMemoContext();
     const { accessToken } = useAuthContext();
-
+    const [addMemoError, setAddMemoError] = useState<string>('');
 
     const onAddANewMemo = async () => {
-
         if (!currentOpenedCategory) {
-            console.error("Missing required category id");
             return;
         }
 
         const payload = {
             category_id: currentOpenedCategory!,
-            title: "New Memo",
-            content: ""
+            title: 'New Memo',
+            content: '',
+        };
+
+        try {
+            const createdMemo = (await addNewMemo(
+                accessToken!,
+                payload
+            )) as MemoDetails;
+
+            const updatedCategories = updateMemoState(categories!, currentOpenedCategory, 'ADD', createdMemo)
+            setCategories(updatedCategories!);
+            setCurrentSelectedMemo(createdMemo);
+        } catch (err) {
+            setAddMemoError('Failed to create a new memo');
+
+            setTimeout(() => {
+                setAddMemoError('');
+            }, 3000);
         }
-        const createdMemo = await addNewMemo(accessToken!, payload)
-
-
-        const currentCategory = categories?.find((category) => category.id === currentOpenedCategory)
-
-        const newMemos = [...currentCategory!.memos! as Memo[], createdMemo]
-
-        const updatedCategories = categories?.map((category) => {
-            if (category.id === currentCategory!.id) {
-                return {
-                    ...category, memos: newMemos
-                }
-            }
-            return category
-
-        })
-
-        setCategories(updatedCategories!)
-    }
-
+    };
 
     return (
         <div className="drawer-side">
-            <ul className="relative menu bg-white min-h-[80%] w-[40%] md:w-72 p-4 mt-32 border border-gray-300 rounded-md z-50">
-                {
-                    categories && categories.length ? categories?.map((category) => (
+            <ul className="relative menu bg-white min-h-[80%] w-[50%] md:w-72 p-4 mt-32 border border-gray-300 z-50">
+                {categories && categories.length ? (
+                    categories?.map((category) => (
                         <CategoryItem key={category.id} category={category} />
-                    )) :
-                        (
-                            <p className="text-2xl text-slate-600">You have to login with a valid access token to see your memos</p>
-                        )
-                }
-                <div className="absolute bottom-0 left-0 w-full bg-white p-4 flex justify-end z-10 border-t">
+                    ))
+                ) : (
+                    <p className="text-base text-slate-600">
+                        You have to login with a valid access token to see your memos
+                    </p>
+                )}
+
+                <div className="absolute bottom-0 left-0 w-full bg-white p-4 flex justify-end items-center z-10 border-t space-x-4">
+                    {addMemoError && (
+                        <div className="">
+                            <div role="alert" className="text-red-500 text-left">
+                                <span>{addMemoError}</span>
+                            </div>
+                        </div>
+                    )}
                     <button
                         id="new-memo"
                         onClick={onAddANewMemo}
@@ -65,5 +76,5 @@ export default function DrawerSide() {
                 </div>
             </ul>
         </div>
-    )
+    );
 }
